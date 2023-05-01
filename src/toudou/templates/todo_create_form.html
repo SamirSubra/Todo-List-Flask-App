@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block title %}Créer{% endblock %}
+
+{% block content %}
+    <section>
+        <nav>
+            <ul>
+                <li>
+                    <a href="{{ url_for('.todo_get_all') }}" class="outline" role="button">Retour</a>
+                </li>
+            </ul>
+        </nav>
+    </section>
+
+    <form action="{{ url_for('.todo_create') }}" method="post">
+        {{ form.csrf_token }}
+        <div class="grid">
+            <label for="task">
+                {{ form.task.label }}
+                {{ form.task(rows='6') }}
+            </label>
+            <div>
+                <label for="due">
+                    {{ form.due.label }}
+                    {{ form.due(type="datetime-local") }}
+                </label>
+                <fieldset>
+                    <label for="complete">
+                        {{ form.complete(role="switch") }}
+                        {{ form.complete.label }}
+                    </label>
+                </fieldset>
+
+                <div class="grid">
+                    <button type="submit">Valider</button>
+                    <button type="reset" class="outline">Réinitialiser</button>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

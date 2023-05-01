@@ -1,0 +1,37 @@
+footer,
+header,
+main,
+section {
+    --block-spacing-vertical: var(--spacing) !important;
+}
+
+.alert {
+    background-color: var(--background-color);
+    background-image: var(--icon);
+    background-position: center left var(--form-element-spacing-vertical);
+    background-size: calc(var(--font-size) * 1.5) auto;
+    border: 1px solid var(--background-color);
+    border-radius: var(--border-radius);
+    color: var(--color);
+    margin-bottom: var(--spacing);
+    padding: var(--form-element-spacing-vertical) var(--form-element-spacing-horizontal);
+    padding-left: calc(var(--form-element-spacing-vertical) * 2 + calc(var(--font-size) * 1.5));
+}
+
+.alert-error {
+    --background-color: #ffebee;
+    --color: #b71c1c;
+    --icon: var(--icon-invalid);
+}
+
+.alert-success {
+    --background-color: #e8f5e9;
+    --color: #1b5e20;
+    --icon: var(--icon-valid);
+}
+
+.alert-warn {
+    --background-color: #fff8e1;
+    --color: #ff6f00;
+    /*--icon: ;*/
+}

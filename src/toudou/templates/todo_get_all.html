@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block title %}Tâches{% endblock %}
+
+{% block content %}
+<section>
+    <nav>
+        <ul>
+            <li>
+                <a href="{{ url_for('.todo_create_form') }}" class="outline" role="button">Nouvelle tâche</a>
+            </li>
+        </ul>
+        <ul>
+            <li>
+                <a href="{{ url_for('.csv_export') }}" class="outline" role="button">Exporter</a>
+            </li>
+        </ul>
+    </nav>
+</section>
+
+<table role="grid">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Tâche</th>
+            <th scope="col">Terminée</th>
+            <th scope="col">Échéance</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for todo in todos %}
+        <tr>
+            <th scope="row">{{ todo.id }}</th>
+            <td>{{ todo.task }}</td>
+            <td>{% if todo.complete %}✓{% else %}{% endif %}</td>
+            <td>{% if todo.due %}{{ todo.due }}{% else %}{% endif %}</td>
+            <td><a href="{{ url_for('.todo_update_form', id=todo.id) }}">Éditer</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

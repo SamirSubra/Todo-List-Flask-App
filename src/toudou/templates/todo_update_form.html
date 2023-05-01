@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block title %}Éditer{% endblock %}
+
+{% block content %}
+    <section>
+        <nav>
+            <ul>
+                <li>
+                    <a href="{{ url_for('.todo_get_all') }}" class="outline" role="button">Retour</a>
+                </li>
+            </ul>
+        </nav>
+    </section>
+
+    <form action="" method="post">
+        {{ form.csrf_token }}
+        <div class="grid">
+            <label for="task">
+                {{ form.task.label }}
+                {{ form.task(rows="6") }}
+            </label>
+            <div>
+                <label for="due">
+                    {{ form.due.label }}
+                    {{ form.due() }}
+                </label>
+                <fieldset>
+                    <label for="complete">
+                        {{ form.complete(role="switch") }}
+                        {{ form.complete.label }}
+                    </label>
+                </fieldset>
+
+                <div class="grid">
+                    <button type="submit">Valider</button>
+                    <button type="reset" class="outline">Réinitialiser</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form action="{{ url_for('.todo_delete', id=todo.id) }}" method="post">
+        <button type="submit" role="button" class="outline">Supprimer</button>
+    </form>
+{% endblock %}
