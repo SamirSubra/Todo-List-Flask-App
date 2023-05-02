@@ -24,11 +24,19 @@ Toudou provides a range of features to help you manage your todos:
 Toudou's user interface is designed to be intuitive and easy to use, allowing you to quickly manage your todos and stay organized. Whether you're working on a school project, planning your daily tasks, or managing a team, Toudou has the features you need to get things done.
 ## Installation
 
-**1. Add** flask to pdm :
+**1. Install** pdm :
+```bash
+$ python -m pdm install
+```
+**2. Add** flask to pdm :
 ```bash
 $ python -m pdm add flask
 ```
-**2. Initialize** a new database :
+**3. Add** flask_principal to pdm :
+```bash
+$ python -m pdm add flask_principal
+```
+**4. Initialize** a new database :
 ```bash
 $ python -m pdm run toudou init-db
 ```
@@ -39,40 +47,45 @@ $ python -m pdm run toudou init-db
 **Web Interface**
 
 To use the application through the web interface:
-1. Start the server: 
+1. **Start** the server: 
 ```bash
 $ python -m pdm run flask --app src/toudou/views.py --debug run
 ```
-2. Open a web browser and go to http://localhost:5000/ to view the to-do list.
+2. **Open** a web browser and go to http://localhost:5000/ to view the to-do list.
+3. **Connect** you with credentiels _user_, _user_
 
 **Command Line Interface**
 
 To use the application through the CLI, run the following commands:
-- Create a new task:
-```bash
+- **Create** a new task (date format : YYYY-MM-DD):
+```bash 
 python -m pdm run toudou create
 ```
-- Get a task by its id: 
+- **Get** a task by its id: 
 ```bash
-python -m pdm run toudou get –id <id>
+python -m pdm run toudou get –-id <id>
 ```
-- Get all tasks: 
+- **Get all** tasks: 
 ```bash
-python -m pdm run toudou get_all
+python -m pdm run toudou get-all
 ```
-- Import tasks from a CSV file: 
+- **Update** a task (date format : YYYY-MM-DD): 
 ```bash
-python -m pdm run toudou import_csv <csv_file>
+python -m pdm run toudou update -–id <id> [--task <task>] --complete <complete> [--due <due>]
 ```
-- Update a task: 
+- **Delete** a task:
 ```bash
-python -m pdm run toudou updating –id <id> --task=<task> --complete <complete> --due <due>
-```
-- Delete a task:
-```bash
-python -m pdm run toudou remove –id <id>
+python -m pdm run toudou remove –-id <id>
 ```
 
+- **Import** tasks from a CSV file: 
+```bash
+python -m pdm run toudou import-csv <csv_file>
+```
+- **Export** tasks from a CSV file: 
+```bash
+python -m pdm run toudou export-csv <filename>
+```
 
 **Notes**
 

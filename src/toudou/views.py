@@ -2,9 +2,11 @@ import click
 import io
 import uuid
 from datetime import datetime
+
 import toudou.models as models
 import toudou.services as services
 from flask import abort, flash, Flask, redirect, render_template, request, send_file, url_for, Blueprint
+from flask_principal import RoleNeed, UserNeed
 
 from flask_wtf import FlaskForm
 from wtforms import (StringField, TextAreaField, IntegerField, BooleanField, RadioField, DateField, DateTimeLocalField)
@@ -23,8 +25,30 @@ todo_blueprint = Blueprint(
 # Logging
 logging.basicConfig(filename='toudou.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
-# Connexion
+# Connection
 auth = HTTPBasicAuth()
+
+# admin_role = RoleNeed('admin')
+# user_role = RoleNeed('user')
+#
+# users = {
+#     'john': {'id': 1, 'roles': [admin_role]}, 'password': generate_password_hash('hello'),
+#     'susan': {'id': 2,'roles': [user_role]}, 'password': generate_password_hash('bye')
+# }
+
+
+# @auth.verify_password
+# def verify_password(username, password):
+#     if username in users and \
+#             check_password_hash(users.get(username).get('password'), password):
+#         return username
+#
+# @auth.get_user_roles
+# def get_user_roles(user):
+#     if user in users:
+#         return users[user]['roles']
+#     else:
+#         return []
 
 users = {
     "john": generate_password_hash("hello"),
@@ -62,6 +86,7 @@ def todo_get_all():
 
 
 @todo_blueprint.get('/todos/create')
+# @auth.login_required(role='admin')
 @auth.login_required
 def todo_create_form():
     form = MyForm()
@@ -123,12 +148,18 @@ def csv_import_form():
 @auth.login_required
 def csv_import():
     csv_file = request.files.get('file', None)
-    if not csv_file or csv_file.filename == '':
+    if not csv_file or csv_file.filename == '': # Verify that the file exists
         flash('Aucun fichier trouvé.', 'error')
         return redirect(request.url)
     else:
-        services.import_from_csv(io.TextIOWrapper(csv_file, 'utf-8'))
-        return redirect(url_for('.todo_get_all'))
+        if not csv_file.filename.lower().endswith('.csv'): # Verify that the file is in .csv format
+            abort(500)
+        else:
+            if services.import_from_csv(io.TextIOWrapper(csv_file, 'utf-8')): # Verify that the id isn't already in the database
+                flash('Tâches importées avec succés', 'success')
+                return redirect(url_for('.todo_get_all'))
+            else:
+                abort(404)
 
 
 @todo_blueprint.get('/csv_export')
@@ -139,6 +170,17 @@ def csv_export():
         download_name='export.csv',
         mimetype='text/csv'
     )
+
+#Errorhandler
+@todo_blueprint.errorhandler(404)
+def tache_existante(error):
+    flash('Veuillez importer un fichier .csv, avec des tâches qui ne figurent pas parmis la liste des tâches', 'error')
+    return redirect(url_for('.csv_import_form'))
+
+@todo_blueprint.errorhandler(500)
+def csv_invalide(error):
+    flash('Veuillez importer un fichier .csv valide', 'error')
+    return redirect(url_for('.csv_import_form'))
 
 
 # CLI
@@ -157,7 +199,7 @@ def init_db():
 
 @cli.command()
 @click.option('-t', '--task', prompt='Your task', help='The task to remember.')
-@click.option('-d', '--due', type=click.DateTime(), default=None, help='Due date of the task.')
+@click.option('-d', '--due', prompt='Due', type=click.DateTime(), default=None, help='Due date of the task.')
 def create(task: str, due: datetime):
     models.create_todo(task, due=due)
 
@@ -182,6 +224,10 @@ def get_all(as_csv: bool):
 def import_csv(csv_file):
     services.import_from_csv(csv_file)
 
+@cli.command()
+@click.argument('filename')
+def export_csv(filename):
+    services.export_to_csv_cli(filename)
 
 @cli.command()
 @click.option('--id', required=True, type=click.UUID, help='Todo\'s id.')
