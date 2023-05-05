@@ -21,7 +21,10 @@ Toudou provides a range of features to help you manage your todos:
 
 **Export**: You can export all of your todos to a CSV file, which can be opened in a spreadsheet program like Excel.
 
+The **admin** has access to **all the features**, while the **user** can **only see** the tasks.
+
 Toudou's user interface is designed to be intuitive and easy to use, allowing you to quickly manage your todos and stay organized. Whether you're working on a school project, planning your daily tasks, or managing a team, Toudou has the features you need to get things done.
+
 ## Installation
 
 **1. Install** pdm :
@@ -52,7 +55,9 @@ To use the application through the web interface:
 $ python -m pdm run flask --app src/toudou/views.py --debug run
 ```
 2. **Open** a web browser and go to http://localhost:5000/ to view the to-do list.
-3. **Connect** you with credentiels _user_, _user_
+3. **Connect** you with credentiels :
+- login : john / password : hello **(admin)** 
+- login : susan / password : bye **(user)** 
 
 **Command Line Interface**
 
@@ -94,4 +99,9 @@ python -m pdm run toudou export-csv <filename>
 - \<complete> is a boolean value indicating whether the task is complete or not.
 - \<due> is the due date of the task in the format DD/MM/YY.
 
-## Thanks
+## Project status
+
+Currently, there two issues : 
+
+- The login form repeatedly asks for the credentials. To log in, we have to specify the page we want to access on the URL (for example: http://localhost:5000/todos) and then fill the form.
+- The @auth.error_handler in the comment section is not working correctly. I am unable to use it to manage the users who attempt to access the admin pages.
