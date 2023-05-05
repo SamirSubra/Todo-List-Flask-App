@@ -1,19 +1,24 @@
 import click
 import io
 import uuid
-from datetime import datetime
-
 import toudou.models as models
 import toudou.services as services
-from flask import abort, flash, Flask, redirect, render_template, request, send_file, url_for, Blueprint
-from flask_principal import RoleNeed, UserNeed
-
-from flask_wtf import FlaskForm
-from wtforms import (StringField, TextAreaField, IntegerField, BooleanField, RadioField, DateField, DateTimeLocalField)
-from wtforms.validators import InputRequired, Length, DataRequired
 import logging
+
+from datetime import datetime
+
+from flask import abort, flash, Flask, redirect, render_template, request, send_file, url_for, Blueprint, app
+from flask_principal import RoleNeed
+from flask_login import current_user, login_manager, LoginManager
+from flask_wtf import FlaskForm
 from flask_httpauth import HTTPBasicAuth
+
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from wtforms import (TextAreaField,BooleanField, DateTimeLocalField)
+from wtforms.validators import InputRequired, Length
+
+
 
 # Blueprint
 todo_blueprint = Blueprint(
@@ -28,38 +33,25 @@ logging.basicConfig(filename='toudou.log', level=logging.DEBUG, format='%(asctim
 # Connection
 auth = HTTPBasicAuth()
 
-# admin_role = RoleNeed('admin')
-# user_role = RoleNeed('user')
-#
-# users = {
-#     'john': {'id': 1, 'roles': [admin_role]}, 'password': generate_password_hash('hello'),
-#     'susan': {'id': 2,'roles': [user_role]}, 'password': generate_password_hash('bye')
-# }
-
-
-# @auth.verify_password
-# def verify_password(username, password):
-#     if username in users and \
-#             check_password_hash(users.get(username).get('password'), password):
-#         return username
-#
-# @auth.get_user_roles
-# def get_user_roles(user):
-#     if user in users:
-#         return users[user]['roles']
-#     else:
-#         return []
+admin_role = RoleNeed('admin')
+user_role = RoleNeed('user')
 
 users = {
-    "john": generate_password_hash("hello"),
-    "susan": generate_password_hash("bye")
+    'john': {'id': 1, 'roles': admin_role, 'password': generate_password_hash('hello')},
+    'susan': {'id': 2,'roles': user_role, 'password': generate_password_hash('bye')}
 }
 
 @auth.verify_password
 def verify_password(username, password):
     if username in users and \
-            check_password_hash(users.get(username), password):
+            check_password_hash(users.get(username).get('password'), password):
         return username
+@auth.get_user_roles
+def get_user_roles(user):
+    if user in users:
+        return users[user]['roles']
+    return []
+
 
 class MyForm(FlaskForm):
     task = TextAreaField('task', validators=[InputRequired(), Length(max=200)])
@@ -69,25 +61,22 @@ class MyForm(FlaskForm):
 # ======
 
 
-
-
 @todo_blueprint.get('/')
-@auth.login_required
+@auth.login_required(role=[admin_role, user_role])
 def home():
-    logging.warning('Someone has accessed the home page.')
+    # logging.warning('Someone has accessed the home page.')
     return render_template('home.html')
 
 
 @todo_blueprint.get('/todos')
-@auth.login_required
+@auth.login_required(role=[admin_role, user_role])
 def todo_get_all():
     logging.warning('Someone has accessed the list of todos.')
     return render_template('todo_get_all.html', todos=models.get_todos())
 
 
 @todo_blueprint.get('/todos/create')
-# @auth.login_required(role='admin')
-@auth.login_required
+@auth.login_required(role=[admin_role])
 def todo_create_form():
     form = MyForm()
     if form.validate_on_submit():
@@ -108,11 +97,10 @@ def todo_create():
 
 
 @todo_blueprint.route('/todos/<uuid:id>', methods=['GET', 'POST'])
-@auth.login_required
+@auth.login_required(role=[admin_role])
 def todo_update_form(id: uuid.UUID):
     todo = models.get_todo(id)
     form = MyForm()
-
     if form.validate_on_submit(): #post
         models.update_todo(
             id,
@@ -139,13 +127,13 @@ def todo_delete(id: uuid.UUID):
 
 
 @todo_blueprint.get('/csv_import')
-@auth.login_required
+@auth.login_required(role=[admin_role])
 def csv_import_form():
     return render_template('csv_import_form.html')
 
 
 @todo_blueprint.post('/csv_import')
-@auth.login_required
+@auth.login_required(role=[admin_role])
 def csv_import():
     csv_file = request.files.get('file', None)
     if not csv_file or csv_file.filename == '': # Verify that the file exists
@@ -172,6 +160,11 @@ def csv_export():
     )
 
 #Errorhandler
+# @auth.error_handler
+# def acces_interdit(e):
+#     flash("Vous devez être administrateur pour entrer dans cette page", 'error')
+#     return redirect(url_for('.todo_get_all'))
+
 @todo_blueprint.errorhandler(404)
 def tache_existante(error):
     flash('Veuillez importer un fichier .csv, avec des tâches qui ne figurent pas parmis la liste des tâches', 'error')
@@ -254,3 +247,4 @@ def create_app():
     app.config.from_prefixed_env(prefix='TOUDOU_FLASK')
     # print(app.config)
     return app
+
