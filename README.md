@@ -59,6 +59,8 @@ $ python -m pdm run flask --app src/toudou/views.py --debug run
 - login : john / password : hello **(admin)** 
 - login : susan / password : bye **(user)** 
 
+To **disconnect**, put this on your url : user:user@localhost:5000 or **clear** the browser data with ctrl+shift+del
+
 **Command Line Interface**
 
 To use the application through the CLI, run the following commands:
@@ -104,4 +106,3 @@ python -m pdm run toudou export-csv <filename>
 Currently, there two issues : 
 
 - The login form repeatedly asks for the credentials. To log in, we have to specify the page we want to access on the URL (for example: http://localhost:5000/todos) and then fill the form.
-- The @auth.error_handler in the comment section is not working correctly. I am unable to use it to manage the users who attempt to access the admin pages.
